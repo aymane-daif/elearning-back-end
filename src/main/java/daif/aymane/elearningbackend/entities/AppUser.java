@@ -13,7 +13,8 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 @Data
 @Entity
-public class AppUser {
+@Inheritance
+public abstract class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appUserId;
