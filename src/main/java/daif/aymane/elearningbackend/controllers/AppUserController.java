@@ -1,7 +1,6 @@
 package daif.aymane.elearningbackend.controllers;
 
 import daif.aymane.elearningbackend.dto.AppUserDto;
-import daif.aymane.elearningbackend.entities.AppUser;
 import daif.aymane.elearningbackend.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

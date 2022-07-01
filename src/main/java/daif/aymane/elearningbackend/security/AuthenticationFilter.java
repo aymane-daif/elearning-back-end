@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,13 +42,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest req,
                                                 HttpServletResponse res) throws AuthenticationException {
         try {
-            UserLoginDto creds = new ObjectMapper()
+            UserLoginDto credentials = new ObjectMapper()
                     .readValue(req.getInputStream(), UserLoginDto.class);
 
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            creds.getEmail(),
-                            creds.getPassword(),
+                            credentials.getEmail(),
+                            credentials.getPassword(),
                             new ArrayList<>())
             );
 
@@ -62,7 +61,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,
                                             FilterChain chain,
-                                            Authentication auth) throws IOException, ServletException {
+                                            Authentication auth) throws IOException {
 
         String email = ((User) auth.getPrincipal()).getUsername();
 
@@ -76,11 +75,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         AppUserDto userDto = userService.getUser(email);
 
         res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
-        res.addHeader("UserID", userDto.getAppUserId().toString());
 
         Map<String, Object> responseBody = new HashMap<>();
-         responseBody.put("token", token);
+        responseBody.put("token", token);
         responseBody.put("message", "success");
+        responseBody.put("userId", userDto.getAppUserId());
 
         res.setContentType("application/json");
         new ObjectMapper().writeValue(res.getOutputStream(), responseBody);

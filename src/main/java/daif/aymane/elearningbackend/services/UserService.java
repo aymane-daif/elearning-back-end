@@ -2,7 +2,6 @@ package daif.aymane.elearningbackend.services;
 
 import daif.aymane.elearningbackend.dto.AppUserDto;
 import daif.aymane.elearningbackend.entities.AppUser;
-import daif.aymane.elearningbackend.entities.Student;
 import daif.aymane.elearningbackend.repositories.AppUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
