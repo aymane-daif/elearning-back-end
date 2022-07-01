@@ -43,6 +43,6 @@ public class Course {
     cascade = CascadeType.ALL,
     orphanRemoval = true,
     fetch = FetchType.EAGER)
-    @JoinColumn(name = "courseSection_id")
+    @JoinColumn(name = "id")
     private List<CourseSection> courseSections = new ArrayList<>();
 }

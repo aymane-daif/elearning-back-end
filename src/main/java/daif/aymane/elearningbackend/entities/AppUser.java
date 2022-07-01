@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @Entity
 @Inheritance
-public abstract class AppUser {
+public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appUserId;
@@ -40,6 +40,8 @@ public abstract class AppUser {
 
     private String password;
 
+    private String role;
+
     @OneToOne
     @JoinColumn(name = "address_id")
     private Address address;
@@ -54,4 +56,11 @@ public abstract class AppUser {
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
     private List<Course> courses = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "user_authority",
+            joinColumns = { @JoinColumn(name = "user_id") },
+            inverseJoinColumns = { @JoinColumn(name = "authority_id") })
+    private List<Authority> authorities = new ArrayList<>();
+
 }
