@@ -42,6 +42,10 @@ public class AppUser {
 
     private String role;
 
+    private String emailVerificationToken;
+
+    private boolean isEmailVerified = false;
+
     @OneToOne
     @JoinColumn(name = "address_id")
     private Address address;

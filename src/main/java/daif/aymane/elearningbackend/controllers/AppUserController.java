@@ -1,12 +1,10 @@
 package daif.aymane.elearningbackend.controllers;
 
 import daif.aymane.elearningbackend.dto.AppUserDto;
+import daif.aymane.elearningbackend.dto.VerificationEmailTokenDto;
 import daif.aymane.elearningbackend.services.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
 @RestController
@@ -20,5 +18,10 @@ public class AppUserController {
         return userService.createUser(appUserDto);
     }
 
+    @PostMapping("/email-verification")
+    public boolean verifyEmailToken(@RequestBody VerificationEmailTokenDto verificationEmailTokenDto) {
 
+       return userService.verifyEmailToken(verificationEmailTokenDto.getToken());
+
+    }
 }

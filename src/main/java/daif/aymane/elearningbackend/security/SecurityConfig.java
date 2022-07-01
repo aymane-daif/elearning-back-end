@@ -32,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity
                 .authorizeRequests()
-                .antMatchers(SecurityConstants.SIGN_UP_URL,SecurityConstants.SIGN_IN_URL).permitAll()
+                .antMatchers(SecurityConstants.SIGN_UP_URL,SecurityConstants.SIGN_IN_URL,SecurityConstants.VERIFICATION_EMAIL_URL).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter())

@@ -9,4 +9,5 @@ import java.util.Optional;
 @NoRepositoryBean
 public interface AppUserBaseRepository<T extends AppUser> extends JpaRepository<T, Long> {
     Optional<AppUser> findUserByEmail(String email);
+    Optional<AppUser> findUserByEmailVerificationToken(String token);
 }
