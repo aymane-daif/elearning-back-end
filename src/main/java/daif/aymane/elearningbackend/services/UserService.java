@@ -1,92 +1,67 @@
 package daif.aymane.elearningbackend.services;
 
-import daif.aymane.elearningbackend.dto.AppUserDto;
-import daif.aymane.elearningbackend.email.EmailEntity;
-import daif.aymane.elearningbackend.email.EmailService;
-import daif.aymane.elearningbackend.entities.AppUser;
-import daif.aymane.elearningbackend.repositories.AppUserRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.GroupsResource;
+import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
-@AllArgsConstructor
+
 @Service
-public class UserService implements UserDetailsService {
-    private final AppUserRepository appUserRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final EmailService emailService;
+public class UserService {
 
+    @Value("${realm-admin.server-url}")
+    String serverUrl;
+    @Value("${realm-admin.username}")
+    String username;
+    @Value("${realm-admin.password}")
+    String password;
+    @Value("${realm-admin.realm}")
+    String realm;
+    @Value("${realm-admin.group-students}")
+    String groupStudents;
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        AppUser appUser = appUserRepository.findUserByEmail(email).get();
+    @Value("${realm-admin.group-instructors}")
+    String groupInstructors;
+    @Value("${realm-admin.client-id}")
+    String clientId;
 
-        if (!appUserRepository.findUserByEmail(email).isPresent())
-            throw new UsernameNotFoundException(email);
-
-        return new User(appUser.getEmail(), appUser.getPassword(),
-                appUser.isEmailVerified(),
-                true, true,
-                true, new ArrayList<>());
-
+    private Keycloak getKeyCloakRealmResource() {
+        return KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .grantType(OAuth2Constants.PASSWORD)
+                .realm(realm)
+                .clientId(clientId)
+                .username(username)
+                .password(password)
+                .resteasyClient(new ResteasyClientBuilder()
+                        .connectionPoolSize(10)
+                        .build()).build();
     }
 
-    public AppUserDto createUser(AppUserDto appUserDto) {
-
-        if (appUserRepository.findUserByEmail(appUserDto.getEmail()).isPresent())
-            throw new IllegalStateException("Record already exists");
-
-
-        AppUser appUser = new AppUser();
-        BeanUtils.copyProperties(appUserDto, appUser);
-        appUser.setPassword(bCryptPasswordEncoder.encode(appUserDto.getPassword()));
-        appUser.setEmailVerificationToken(emailService.generateEmailVerificationToken(appUserDto.getEmail()));
-        appUser.setEmailVerified(false);
-        appUserRepository.save(appUser);
-        BeanUtils.copyProperties(appUser, appUserDto);
-
-        String subject = "Email verification token";
-        String msg = "Your verification token is: " + appUser.getEmailVerificationToken();
-        EmailEntity emailEntity = new EmailEntity(appUserDto.getEmail(),subject,msg);
-        emailService.sendMail(emailEntity);
-
-        return appUserDto;
+    private List<UserRepresentation> getUsersByGroup(String group){
+        Keycloak keycloak = getKeyCloakRealmResource();
+        GroupsResource groupsResource = keycloak.realm(realm).groups();
+        // get group id
+        String groupId = groupsResource.groups().stream()
+                .filter(singleGroup -> singleGroup.getName().equals(group))
+                .map(GroupRepresentation::getId)
+                .findFirst()
+                .orElse("");
+        //get group users for given id
+        return groupsResource.group(groupId).members();
+    }
+    public List<UserRepresentation> getAllStudents() {
+        return getUsersByGroup(groupStudents);
+    }
+    public List<UserRepresentation> getAllInstructors() {
+        return getUsersByGroup(groupInstructors);
     }
 
-    public AppUserDto getUser(String email) {
-        AppUser appUser = appUserRepository.findUserByEmail(email).get();
-
-        if (!appUserRepository.findUserByEmail(email).isPresent())
-            throw new UsernameNotFoundException(email);
-
-        AppUserDto appUserDto = new AppUserDto();
-        BeanUtils.copyProperties(appUser, appUserDto);
-
-        return appUserDto;
-    }
-
-    public boolean verifyEmailToken(String token) {
-        boolean isValidToken = false;
-
-        AppUser appUser = appUserRepository.findUserByEmailVerificationToken(token).get();
-
-        if (appUserRepository.findUserByEmailVerificationToken(token).isPresent()) {
-            boolean hasTokenExpired = emailService.isTokenExpired(token);
-            if (!hasTokenExpired) {
-                appUser.setEmailVerificationToken(null);
-                appUser.setEmailVerified(true);
-                appUserRepository.save(appUser);
-                isValidToken = true;
-            }
-        }
-
-        return isValidToken;
-    }
 }

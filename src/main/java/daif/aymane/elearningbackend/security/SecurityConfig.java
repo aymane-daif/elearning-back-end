@@ -1,67 +1,95 @@
 package daif.aymane.elearningbackend.security;
 
 
-import daif.aymane.elearningbackend.services.UserService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@AllArgsConstructor
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final UserDetailsService userDetailsService;
-    private final UserService userService;
 
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.cors().and().csrf().disable();
-        httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        httpSecurity
-                .authorizeRequests()
-                .antMatchers(SecurityConstants.SIGN_UP_URL,SecurityConstants.SIGN_IN_URL,SecurityConstants.VERIFICATION_EMAIL_URL).permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .addFilter(getAuthenticationFilter())
-                .addFilter(new AuthorizationFilter(authenticationManager()));
-    }
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
-    }
+    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_STUDENT = "STUDENT";
+    public static final String RESOURCE_ACCESS = "resource_access";
+    public static final String ROLES = "roles";
+    public static final String REALM_ACCESS = "realm_access";
 
-    protected AuthenticationFilter getAuthenticationFilter() throws Exception {
-        AuthenticationFilter filter = new AuthenticationFilter(authenticationManager(), userService);
-        filter.setFilterProcessesUrl(SecurityConstants.SIGN_IN_URL);
-        return filter;
-    }
+    @Value("${keycloak.resource}")
+    private String clientId;
+
+    @Value("${keycloak.allowed-origin}")
+    private String allowedOrigin;
+
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        final CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-
+    @Order(0)
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin(allowedOrigin);
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.oauth2ResourceServer().jwt()
+                .jwtAuthenticationConverter(jwtAuthenticationConverter());
+        http
+                .cors()
+                .and()
+                .authorizeRequests()
+              //  .antMatchers(HttpMethod.GET, "/api/**").hasRole(ROLE_STUDENT)
+                .anyRequest().permitAll()
+                .and().csrf().disable();
+    }
+
+    private JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            final List<String> realmAccess = getRealmRoles(jwt);
+            final List<String> resourceAccess = getResourceRoles(jwt);
+            realmAccess.addAll(resourceAccess);
+            Set<String> roles = new TreeSet<>(realmAccess);
+            return roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+        });
+        return converter;
+    }
+
+    private List<String> getRealmRoles(Jwt jwt) {
+        return (List<String>) ((Map<String, Object>) jwt.getClaims()
+                .get(REALM_ACCESS)).get(ROLES);
+    }
+
+    private List<String> getResourceRoles(Jwt jwt) {
+        Map<String, Object> resourceAccess = (Map<String, Object>) jwt.getClaims()
+                .get(RESOURCE_ACCESS);
+        Map<String, Object> clientAccess = (Map<String, Object>) resourceAccess
+                .get(clientId);
+        if (clientAccess != null) {
+            return (List<String>) clientAccess.get(ROLES);
+        }
+        return Collections.emptyList();
+    }
+
 }

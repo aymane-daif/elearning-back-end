@@ -1,27 +1,27 @@
 package daif.aymane.elearningbackend.controllers;
 
-import daif.aymane.elearningbackend.dto.AppUserDto;
-import daif.aymane.elearningbackend.dto.VerificationEmailTokenDto;
+import org.keycloak.representations.idm.UserRepresentation;
 import daif.aymane.elearningbackend.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/users")
 public class AppUserController {
 
     private final UserService userService;
 
-    @PostMapping("/signup")
-    public AppUserDto createUser(@RequestBody AppUserDto appUserDto){
-        return userService.createUser(appUserDto);
+    @GetMapping("/students")
+    public List<UserRepresentation> getAllStudents() {
+        return userService.getAllStudents();
     }
 
-    @PostMapping("/email-verification")
-    public boolean verifyEmailToken(@RequestBody VerificationEmailTokenDto verificationEmailTokenDto) {
-
-       return userService.verifyEmailToken(verificationEmailTokenDto.getToken());
-
+    @GetMapping("/instructors")
+    public List<UserRepresentation> getAllInstructors() {
+        return userService.getAllInstructors();
     }
+
 }
