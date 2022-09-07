@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 public class AppUserDto {
     private Long appUserId;
 
-    private String firstName, lastName, email, phone, bio, password, role, emailVerificationToken;
+    private String username, firstName, lastName, email, phone, bio, password, role, emailVerificationToken;
 
     private boolean isEmailVerified;
 
