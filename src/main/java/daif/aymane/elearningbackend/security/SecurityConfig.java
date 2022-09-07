@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public static final String ROLE_ADMIN = "ADMIN";
-    public static final String ROLE_STUDENT = "STUDENT";
+    public static final String ROLE_USER = "USER";
+    public static final String ROLE_CREATOR = "CREATOR";
     public static final String RESOURCE_ACCESS = "resource_access";
     public static final String ROLES = "roles";
     public static final String REALM_ACCESS = "realm_access";
@@ -57,7 +57,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and()
                 .authorizeRequests()
-              //  .antMatchers(HttpMethod.GET, "/api/**").hasRole(ROLE_STUDENT)
+                .antMatchers(HttpMethod.GET, "/api/v1/users/students").hasRole(ROLE_USER)
+                .antMatchers(HttpMethod.GET, "/api/v1/users/instructors").hasRole(ROLE_CREATOR)
                 .anyRequest().permitAll()
                 .and().csrf().disable();
     }

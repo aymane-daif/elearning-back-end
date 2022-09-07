@@ -29,7 +29,7 @@ public class UserService {
 
     @Value("${realm-admin.group-instructors}")
     String groupInstructors;
-    @Value("${realm-admin.client-id}")
+    @Value("${keycloak.resource}")
     String clientId;
 
     private Keycloak getKeyCloakRealmResource() {
