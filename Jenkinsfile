@@ -1,5 +1,5 @@
 def dockerImageName = "elearning-api"
-def dockerImageTag = "${dockerRepoUrl}/elearning/${dockerImageName}:latest"
+def dockerImageTag = "elearning/${dockerImageName}:latest"
 
 pipeline {
    agent any
