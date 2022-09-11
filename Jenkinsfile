@@ -32,7 +32,9 @@ pipeline {
          }
       }
       stage('Deploy') {
-         sh("echo deploy")
+          steps {
+            sh("echo deploy")
+          }
       }
 
    }
