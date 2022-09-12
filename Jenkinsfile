@@ -5,10 +5,29 @@ pipeline {
    agent any
    stages {
       stage('Tests') {
-         steps {
+      environment {
+                  AWS_NAME = credentials("AWS_NAME")
+                  AWS_HOST = credentials("AWS_HOST")
+                  AWS_USER = credentials("AWS_USER")
+                  AWS_IDENTITY = credentials("AWS_IDENTITY")
+                }
+                steps {
+                   sh("echo deploy")
+                   script {
+                     def remote = [: ]
+                     remote.name = '$AWS_NAME'
+                     remote.host = 'AWS_HOST'
+                     remote.user = 'AWS_USER'
+                     remote.identity = 'AWS_IDENTITY'
+                     remote.allowAnyHosts = true
+                     sshCommand remote: remote, command: 'echo hello'
+                  }
+                }
+         //steps {
             //sh("mvn clean test")
-            sh("echo test")
-         }
+            //sh("echo test")
+
+       //  }
       }
       stage('build') {
          steps {
@@ -41,15 +60,15 @@ pipeline {
           }
           steps {
              sh("echo deploy")
-             script {
-               def remote = [: ]
-               remote.name = '$AWS_NAME'
-               remote.host = 'AWS_HOST'
-               remote.user = 'AWS_USER'
-               remote.identity = 'AWS_IDENTITY'
-               remote.allowAnyHosts = true
-               sshCommand remote: remote, command: 'echo hello'
-            }
+//              script {
+//                def remote = [: ]
+//                remote.name = '$AWS_NAME'
+//                remote.host = 'AWS_HOST'
+//                remote.user = 'AWS_USER'
+//                remote.identity = 'AWS_IDENTITY'
+//                remote.allowAnyHosts = true
+//                sshCommand remote: remote, command: 'echo hello'
+//             }
           }
       }
 
