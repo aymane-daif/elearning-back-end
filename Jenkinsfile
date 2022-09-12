@@ -33,8 +33,23 @@ pipeline {
          }
       }
       stage('Deploy') {
+          environment {
+            AWS_NAME = credentials("AWS_NAME")
+            AWS_HOST = credentials("AWS_HOST")
+            AWS_USER = credentials("AWS_USER")
+            AWS_IDENTITY = credentials("AWS_IDENTITY")
+          }
           steps {
-            sh("echo deploy")
+             sh("echo deploy")
+             script {
+               def remote = [: ]
+               remote.name = '$AWS_NAME'
+               remote.host = 'AWS_HOST'
+               remote.user = 'AWS_USER'
+               remote.identity = 'AWS_IDENTITY'
+               remote.allowAnyHosts = true
+               sshCommand remote: remote, command: 'mkdir aymane && echo hello >> aymane'
+            }
           }
       }
 
