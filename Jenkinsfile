@@ -36,6 +36,8 @@ pipeline {
       }
       stage('Docker Build and Tag') {
          steps {
+                      sh("echo tag")
+
 //             sh("docker build -f docker/Dockerfile -t ${dockerImageName} .")
          }
       }
@@ -45,6 +47,8 @@ pipeline {
             DOCKER_PASSWORD = credentials("DOCKER_PASSWORD")
          }
          steps {
+                      sh("echo push")
+
 //             sh("docker tag ${dockerImageName} ${dockerImageTag}")
 //             sh('docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD')
 //
