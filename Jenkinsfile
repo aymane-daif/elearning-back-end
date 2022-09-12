@@ -48,7 +48,7 @@ pipeline {
                remote.user = 'AWS_USER'
                remote.identity = 'AWS_IDENTITY'
                remote.allowAnyHosts = true
-               sshCommand remote: remote, command: 'mkdir aymane && echo hello >> aymane'
+               sshCommand remote: remote, command: 'echo hello'
             }
           }
       }
