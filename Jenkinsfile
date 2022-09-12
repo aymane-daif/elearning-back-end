@@ -18,9 +18,9 @@ pipeline {
                      remote.name = "$AWS_NAME"
                      remote.host = "$AWS_HOST"
                      remote.user = "$AWS_USER"
-                     remote.identifyFile = "$AWS_IDENTITY"
+                     remote.identityFile = "$AWS_IDENTITY"
                      remote.allowAnyHosts = true
-                     sshCommand remote: remote, command: 'mkdir test && echo hello'
+                     sshCommand remote: remote, command: 'ls'
                   }
                 }
          //steps {
