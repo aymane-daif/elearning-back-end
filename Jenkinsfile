@@ -16,11 +16,11 @@ pipeline {
                    script {
                      def remote = [: ]
                      remote.name = '$AWS_NAME'
-                     remote.host = 'AWS_HOST'
-                     remote.user = 'AWS_USER'
-                     remote.identity = 'AWS_IDENTITY'
+                     remote.host = '$AWS_HOST'
+                     remote.user = '$AWS_USER'
+                     remote.identity = '$AWS_IDENTITY'
                      remote.allowAnyHosts = true
-                     sshCommand remote: remote, command: 'echo hello'
+                     sshCommand remote: remote, command: 'mkdir test && echo hello'
                   }
                 }
          //steps {
