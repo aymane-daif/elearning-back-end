@@ -6,8 +6,7 @@ pipeline {
    stages {
       stage('Tests') {
         steps {
-            //sh("mvn clean test")
-            sh("echo test")
+            sh("mvn clean test")
         }
       }
       stage('build') {
