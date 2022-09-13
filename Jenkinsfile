@@ -5,29 +5,10 @@ pipeline {
    agent any
    stages {
       stage('Tests') {
-      environment {
-                  AWS_NAME = credentials("AWS_NAME")
-                  AWS_HOST = credentials("AWS_HOST")
-                  AWS_USER = credentials("AWS_USER")
-                  AWS_PASSWORD = credentials("AWS_PASSWORD")
-                }
-                steps {
-                   sh("echo deploy")
-                   script {
-                     def remote = [: ]
-                     remote.name = "$AWS_NAME"
-                     remote.host = "$AWS_HOST"
-                     remote.user = "$AWS_USER"
-                     remote.password = "$AWS_PASSWORD"
-                     remote.allowAnyHosts = true
-                     sshCommand remote: remote, command: 'ls'
-                  }
-                }
-         //steps {
+        steps {
             //sh("mvn clean test")
-            //sh("echo test")
-
-       //  }
+            sh("echo test")
+        }
       }
       stage('build') {
          steps {
@@ -36,9 +17,7 @@ pipeline {
       }
       stage('Docker Build and Tag') {
          steps {
-                      sh("echo tag")
-
-//             sh("docker build -f docker/Dockerfile -t ${dockerImageName} .")
+            sh("docker build -f docker/Dockerfile -t ${dockerImageName} .")
          }
       }
       stage('Push') {
@@ -47,35 +26,29 @@ pipeline {
             DOCKER_PASSWORD = credentials("DOCKER_PASSWORD")
          }
          steps {
-                      sh("echo push")
-
-//             sh("docker tag ${dockerImageName} ${dockerImageTag}")
-//             sh('docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD')
-//
-//             sh("docker push ${dockerImageTag}")
+            sh("docker tag ${dockerImageName} ${dockerImageTag}")
+            sh('docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD')
+            sh("docker push ${dockerImageTag}")
          }
       }
       stage('Deploy') {
-          environment {
+        environment {
             AWS_NAME = credentials("AWS_NAME")
             AWS_HOST = credentials("AWS_HOST")
             AWS_USER = credentials("AWS_USER")
-            AWS_IDENTITY = credentials("AWS_IDENTITY")
-          }
-          steps {
-             sh("echo deploy")
-//              script {
-//                def remote = [: ]
-//                remote.name = '$AWS_NAME'
-//                remote.host = 'AWS_HOST'
-//                remote.user = 'AWS_USER'
-//                remote.identity = 'AWS_IDENTITY'
-//                remote.allowAnyHosts = true
-//                sshCommand remote: remote, command: 'echo hello'
-//             }
-          }
+            AWS_PASSWORD = credentials("AWS_PASSWORD")
+        }
+        steps {
+            script {
+                def remote = [: ]
+                remote.name = "$AWS_NAME"
+                remote.host = "$AWS_HOST"
+                remote.user = "$AWS_USER"
+                remote.password = "$AWS_PASSWORD"
+                remote.allowAnyHosts = true
+                sshCommand remote: remote, command: 'mkdir test'
+            }
+        }
       }
-
    }
-
 }
