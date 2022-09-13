@@ -9,7 +9,7 @@ pipeline {
                   AWS_NAME = credentials("AWS_NAME")
                   AWS_HOST = credentials("AWS_HOST")
                   AWS_USER = credentials("AWS_USER")
-                  AWS_IDENTITY = credentials("AWS_IDENTITY")
+                  AWS_PASSWORD = credentials("AWS_PASSWORD")
                 }
                 steps {
                    sh("echo deploy")
@@ -18,7 +18,7 @@ pipeline {
                      remote.name = "$AWS_NAME"
                      remote.host = "$AWS_HOST"
                      remote.user = "$AWS_USER"
-                     remote.password = "$AWS_IDENTITY"
+                     remote.password = "$AWS_PASSWORD"
                      remote.allowAnyHosts = true
                      sshCommand remote: remote, command: 'ls'
                   }
