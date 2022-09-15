@@ -45,7 +45,7 @@ pipeline {
                 remote.user = "$AWS_USER"
                 remote.password = "$AWS_PASSWORD"
                 remote.allowAnyHosts = true
-                sshCommand remote: remote, command: 'mkdir test'
+                sshCommand remote: remote, command: "docker run -d -p 8090:8090 ${dockerImageName}"
             }
         }
       }
